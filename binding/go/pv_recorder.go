@@ -25,9 +25,7 @@ import (
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -115,8 +113,8 @@ type nativePvRecorderType struct{}
 
 // private vars
 var (
-	osName, cpu      = getOS()
-	extractionDir    = filepath.Join(os.TempDir(), "cheetah")
+	osName, cpu   = getOS()
+	extractionDir = filepath.Join(os.TempDir(), "pv_recorder")
 
 	libName          = extractLib()
 	nativePvRecorder = nativePvRecorderType{}
@@ -307,15 +305,15 @@ func extractLib() string {
 	var libPath string
 	switch os := runtime.GOOS; os {
 	case "darwin":
-		libPath = fmt.Sprintf("embedded/lib/%s/%s/libpv_cheetah.dylib", osName, cpu)
+		libPath = fmt.Sprintf("embedded/lib/%s/%s/libpv_recorder.dylib", osName, cpu)
 	case "linux":
 		if cpu == "" {
-			libPath = fmt.Sprintf("embedded/lib/%s/libpv_cheetah.so", osName)
+			libPath = fmt.Sprintf("embedded/lib/%s/libpv_recorder.so", osName)
 		} else {
-			libPath = fmt.Sprintf("embedded/lib/%s/%s/libpv_cheetah.so", osName, cpu)
+			libPath = fmt.Sprintf("embedded/lib/%s/%s/libpv_recorder.so", osName, cpu)
 		}
 	case "windows":
-		libPath = fmt.Sprintf("embedded/lib/%s/amd64/libpv_cheetah.dll", osName)
+		libPath = fmt.Sprintf("embedded/lib/%s/amd64/libpv_recorder.dll", osName)
 	default:
 		log.Fatalf("%s is not a supported OS", os)
 	}
@@ -335,7 +333,7 @@ func extractFile(srcFile string, dstDir string) string {
 		log.Fatalf("%v", err)
 	}
 
-	writeErr := ioutil.WriteFile(extractedFilepath, bytes, 0777)
+	writeErr := os.WriteFile(extractedFilepath, bytes, 0777)
 	if writeErr != nil {
 		log.Fatalf("%v", writeErr)
 	}
